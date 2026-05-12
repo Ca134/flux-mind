@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电感设计 AI 助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chat-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f5f5f5;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-ai {
+            justify-content: flex-start;
+        }
+
+        .message-user {
+            justify-content: flex-end;
+        }
+
+        .message-system {
+            justify-content: center;
+        }
+
+        .message-avatar {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 70%;
+        }
+
+        .message-user .message-content {
+            align-items: flex-end;
+        }
+
+        .message-system .message-content {
+            align-items: center;
+            max-width: 90%;
+        }
+
+        .message-text {
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message-ai .message-text {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-user .message-text {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-system .message-text {
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #999;
+            margin: 0 4px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.5;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+        }
+
+        .status-bar {
+            padding: 12px 20px;
+            background: #f0f0f0;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .status-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .status-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .status-separator {
+            color: #ccc;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-field:disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .input-tips {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 90%;
+            animation: slideUp 0.3s;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .tool-info {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-item .label {
+            color: #667eea;
+            font-weight: 600;
+            min-width: 80px;
+        }
+
+        .info-item .value {
+            color: #333;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            margin: 0 0 12px 0;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .modal-input,
+        .return-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .modal-input:focus,
+        .return-input:focus {
+            border-color: #667eea;
+        }
+
+        .return-input {
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            background: #f9f9f9;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-button {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>⚡ 电感设计 AI 助手</h1>
+            <p>智能参数采集与优化设计系统</p>
+        </div>
+
+        <button class="start-button" id="startBtn" onclick="startSession()">启动会话</button>
+
+        <div class="chat-wrapper">
+            <div class="chat-window">
+                <div class="messages-container" id="messagesContainer">
+                    <div class="message message-system">
+                        <div class="message-avatar">ℹ️</div>
+                        <div class="message-content">
+                            <div class="message-text">👋 欢迎使用电感设计 AI 助手！</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-bar">
+                    <div class="status-info">
+                        <span class="status-label">已录入参数:</span>
+                        <span class="status-value" id="paramCount">0</span>
+                        <span class="status-separator">|</span>
+                        <span class="status-label">参数值:</span>
+                        <span class="status-value" id="paramValues">无</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="userInput"
+                        placeholder="请输入消息或参数值 (如: ht=10)..."
+                        class="input-field"
+                        onkeyup="if(event.key==='Enter') sendMessage()"
+                    />
+                    <button class="send-button" onclick="sendMessage()">发送</button>
+                </div>
+                <div class="input-tips">
+                    💡 提示: 输入参数值如 "ht=10" 或提问如 "ht是什么意思"
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户输入弹窗 -->
+    <div id="inputModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>请输入信息</h2>
+                <button class="close-btn" onclick="closeInputModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="section-title">请输入信息继续对话：</p>
+                <input
+                    type="text"
+                    id="modalInput"
+                    placeholder="输入内容..."
+                    class="modal-input"
+                    onkeyup="if(event.key==='Enter') confirmInput()"
+                />
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeInputModal()">取消</button>
+                <button class="btn btn-confirm" onclick="confirmInput()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- return_value 弹窗 -->
+    <div id="returnValueModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>工具返回值输入</h2>
+                <button class="close-btn" onclick="closeReturnValueModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="tool-info" id="toolInfo"></div>
+                <div class="input-section">
+                    <p class="section-title">请输入该工具调用的返回值：</p>
+                    <textarea
+                        id="returnValueInput"
+                        placeholder="输入 JSON 格式或文本..."
+                        class="return-input"
+                    ></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeReturnValueModal()">取消</button>
+                <button class="btn btn-confirm" onclick="confirmReturnValue()">提交</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pollingInterval = null;
+        let currentSession = null;
+
+        async function startSession() {
+            try {
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('messagesContainer').innerHTML = '';
+                addMessage('system', '✅ 会话已启动，AI 正在思考...');
+                
+                const response = await fetch('/api/start-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    startPolling();
+                }
+            } catch (error) {
+                addMessage('system', `❌ 启动会话失败: ${error.message}`);
+                document.getElementById('startBtn').disabled = false;
+            }
+        }
+
+        function startPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/get-messages');
+                    const data = await response.json();
+                    
+                    if (data.messages) {
+                        data.messages.forEach(msg => handleBackendMessage(msg));
+                    }
+                    
+                    // 更新状态
+                    updateStatus();
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 500);
+        }
+
+        function handleBackendMessage(message) {
+            const { type, content } = message;
+
+            switch (type) {
+                case 'ai_message':
+                    addMessage('ai', content);
+                    break;
+                case 'request_user_input':
+                    showInputModal();
+                    addMessage('system', content);
+                    break;
+                case 'request_return_value':
+                    showReturnValueModal(content);
+                    addMessage('system', `工具 "${content.tool}" 需要返回值`);
+                    break;
+                case 'error':
+                    addMessage('system', `❌ 错误: ${content}`);
+                    break;
+                case 'session_end':
+                    addMessage('system', `✅ ${content}`);
+                    document.getElementById('startBtn').disabled = false;
+                    if (pollingInterval) clearInterval(pollingInterval);
+                    break;
+                case 'design_result':
+                    addMessage('system', `🎯 优化设计结果:\n${JSON.stringify(content, null, 2)}`);
+                    break;
+            }
+        }
+
+        function addMessage(type, content) {
+            const container = document.getElementById('messagesContainer');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message message-${type}`;
+            
+            const avatarMap = { 'ai': '🤖', 'user': '👤', 'system': 'ℹ️' };
+            const time = new Date().toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            messageEl.innerHTML = `
+                <div class="message-avatar">${avatarMap[type]}</div>
+                <div class="message-content">
+                    <div class="message-text">${escapeHtml(content)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage('user', message);
+                await fetch('/api/send-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                input.value = '';
+            }
+        }
+
+        function showInputModal() {
+            document.getElementById('inputModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modalInput').focus(), 100);
+        }
+
+        function closeInputModal() {
+            document.getElementById('inputModal').classList.add('hidden');
+            document.getElementById('modalInput').value = '';
+        }
+
+        async function confirmInput() {
+            const input = document.getElementById('modalInput').value.trim();
+            if (input) {
+                closeInputModal();
+                addMessage('user', input);
+                await fetch('/api/send-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: input })
+                });
+            }
+        }
+
+        function showReturnValueModal(toolInfo) {
+            const toolInfoDiv = document.getElementById('toolInfo');
+            toolInfoDiv.innerHTML = `
+                <div class="info-item">
+                    <span class="label">工具名称:</span>
+                    <span class="value">${escapeHtml(toolInfo.tool)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">参数:</span>
+                    <span class="value">${escapeHtml(JSON.stringify(toolInfo.parameter))}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">目的:</span>
+                    <span class="value">${escapeHtml(toolInfo.purpose)}</span>
+                </div>
+            `;
+            document.getElementById('returnValueModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('returnValueInput').focus(), 100);
+        }
+
+        function closeReturnValueModal() {
+            document.getElementById('returnValueModal').classList.add('hidden');
+            document.getElementById('returnValueInput').value = '';
+        }
+
+        async function confirmReturnValue() {
+            const input = document.getElementById('returnValueInput').value.trim();
+            if (input) {
+                closeReturnValueModal();
+                addMessage('user', `[return_value]: ${input}`);
+                await fetch('/api/send-return-value', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ return_value: input })
+                });
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/get-status');
+                const data = await response.json();
+                
+                document.getElementById('paramCount').textContent = 
+                    Object.keys(data.recorded_params).length;
+                
+                const paramStr = Object.entries(data.recorded_params)
+                    .map(([k, v]) => `${k}=${v}`)
+                    .join(', ') || '无';
+                document.getElementById('paramValues').textContent = paramStr;
+            } catch (error) {
+                console.error('Update status error:', error);
+            }
+        }
+
+        // 初始化
+        updateStatus();
+    </script>
+</body>
+</html>

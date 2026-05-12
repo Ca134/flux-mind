@@ -1,0 +1,31 @@
+﻿__pycache__/
+**/__pycache__/
+*.pyc
+
+# Frontend dependencies
+frontend/node_modules/
+frontend/package-lock.json
+frontend/dist/
+
+# Logs and local runtime artifacts
+*.log
+*.err.log
+*.tmp.json
+nul
+**/nul
+
+# Local tool settings
+.claude/
+**/.claude/
+
+# IDE
+.vscode/
+**/.vscode/
+.idea/
+
+
+# Local secrets
+.env
+.env.*
+!.env.example
+

@@ -1,0 +1,73 @@
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+**/.venv/
+
+# Node/Vite artifacts
+node_modules/
+dist/
+build/
+.vite/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+*.err.log
+*.tmp
+*.tmp.json
+*.bak
+*.swp
+*.swo
+nul
+
+# Local tool/editor state
+.claude/
+.codex
+**/.codex
+.vscode/
+.idea/
+**/.kimi_codex/
+
+# Private model and vector-index artifacts
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.safetensors
+*.faiss
+ann-api-base/models/*
+!ann-api-base/models/README.md
+
+# Maxwell/ANSYS transient artifacts
+maxwell_templates/
+*.aedt.lock
+*.aedtresults/
+
+# Large local tools and third-party reference checkouts
+**/.git/
+**/.tools/
+*.AppImage
+*.zip
+maxwell_templates/cvtr_all/agent_references/
+maxwell_templates/cvtr_all/
+maxwell_templates/maxwell_codex/
+
+# Generated documents and local planning drafts
+docs/deployment/
+docs/**/*.pdf
+HERMES_AGENT_INTEGRATION_PLAN.md
+flux_mind_*_plan.md
+ann-api-base/_*.py

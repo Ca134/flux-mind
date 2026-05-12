@@ -1,0 +1,13 @@
+case_id,category,scenario,f_kHz,i_A,target_L_min_uH,target_L_max_uH,additional_constraints,llm_only_target_hit,llm_only_hit_count,fluxmind_target_hit,fluxmind_hit_count
+A1,requirements_first,Buck converter inductor,200,10,5,10,,False,0,True,15
+A2,requirements_first,Boost inductor (loss priority),150,18,15,25,,True,2,True,25
+A3,requirements_first,High-current compact inductor,300,25,2,4,,False,0,True,5
+A4,requirements_first,On-board inductor (balanced efficiency and volume),120,20,20,35,,True,1,True,5
+B1,requirements_with_constraints,Height-constrained inductor,200,10,5,10,ht={'max': 10},True,1,True,5
+B2,requirements_with_constraints,Center-leg-diameter-constrained inductor,180,12,8,15,"dc1={'min': 7, 'max': 9}",False,0,True,15
+B3,requirements_with_constraints,Rapid deployment (few turns),250,8,6,12,,True,1,True,15
+B4,requirements_with_constraints,Height and center-leg constrained inductor,200,10,5,10,"dc1=8; ht={'min': 8, 'max': 10}",False,0,True,5
+C1,clarify_then_design,Clarification-oriented Buck inductor,200,10,5,10,,False,0,True,5
+C2,clarify_then_design,Clarification-oriented high-frequency inductor,300,8,8,12,,False,0,True,15
+C3,clarify_then_design,Clarification-oriented medium-current inductor,180,12,10,18,,False,0,True,15
+C4,clarify_then_design,Clarification-oriented compact/low-loss comparison,200,10,5,10,,True,2,True,25

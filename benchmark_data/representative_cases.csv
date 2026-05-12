@@ -1,0 +1,7 @@
+case_id,scenario,method,L_uH,P_total_W,V_mm3
+A2,Boost inductor (loss priority),LLM-only,21.3612,9.3943,90417.808
+A2,Boost inductor (loss priority),FluxMind,15.1,5.56,9908.0
+A4,On-board inductor (balanced efficiency and volume),LLM-only,30.5667,18.7433,31757.088
+A4,On-board inductor (balanced efficiency and volume),FluxMind,20.3,5.18,26551.0
+B3,Rapid deployment (few turns),LLM-only,9.0564,1.8489,11726.208
+B3,Rapid deployment (few turns),FluxMind,6.15,0.75,5927.1

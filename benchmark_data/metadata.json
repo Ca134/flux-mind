@@ -1,0 +1,9 @@
+{
+  "generated_at_utc": "2026-05-12T11:37:07.295143+00:00",
+  "source_directory": "D:/power-electronics-project/llm_model/changed_base_on_model/paper/myself_final/coverage_exp",
+  "raw_run_records": "raw_runs/",
+  "validated_llm_only_results": "validated_results/llm_only/",
+  "llm_only_success_count": 5,
+  "fluxmind_success_count": 12,
+  "total_cases": 12
+}
